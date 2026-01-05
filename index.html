@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a1a1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Unbooked</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #0d0d0d;
+      --surface: #1a1a1a;
+      --border: #2a2a2a;
+      --text: #e0e0e0;
+      --text-dim: #666;
+      --accent: #ff6b35;
+      --accent-dim: #cc5529;
+      --warning: #ffc107;
+      --danger: #ff4444;
+      --success: #4caf50;
+      --green: #4caf50;
+      --yellow: #ffc107;
+      --red: #ff4444;
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.5px;
+    }
+
+    .logo span {
+      color: var(--accent);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .timer-section {
+      flex: 0 0 auto;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .timer-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      margin-bottom: 0.25rem;
+    }
+
+    .timer-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 3.5rem;
+      font-weight: 700;
+      line-height: 1;
+      transition: color 0.3s;
+    }
+
+    .timer-display.warning {
+      color: var(--warning);
+    }
+
+    .timer-display.danger {
+      color: var(--danger);
+      animation: urgentPulse 1s infinite;
+    }
+
+    @keyframes urgentPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .timer-sub {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-top: 0.25rem;
+    }
+
+    .stats-bar {
+      padding: 0.5rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+    }
+
+    .stats-bar.hidden {
+      display: none;
+    }
+
+    .stats-total {
+      color: var(--text-dim);
+    }
+
+    .stats-colors {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .stats-colors span {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .dot.green { background: var(--green); }
+    .dot.yellow { background: var(--yellow); }
+    .dot.red { background: var(--red); }
+
+    .quick-actions {
+      padding: 0.75rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .quick-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 0.5rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .quick-btn:hover {
+      background: var(--border);
+      border-color: var(--text-dim);
+    }
+
+    .quick-btn:active {
+      transform: scale(0.96);
+    }
+
+    .quick-btn .icon {
+      font-size: 1.25rem;
+    }
+
+    .quick-btn.sleep-btn {
+      grid-column: span 3;
+      flex-direction: row;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border-color: #2a2a4e;
+    }
+
+    .custom-section {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .custom-input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .custom-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 0.75rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.85rem;
+    }
+
+    .custom-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .custom-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .log-btn {
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .log-btn:hover {
+      background: var(--accent-dim);
+    }
+
+    .log-section {
+      flex: 1;
+      padding: 0.75rem;
+      overflow-y: auto;
+    }
+
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .log-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+    }
+
+    .clear-btn {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 0.7rem;
+      cursor: pointer;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .clear-btn:hover {
+      color: var(--danger);
+    }
+
+    .log-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .log-entry {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.6rem 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .log-entry-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .log-entry-activity {
+      font-size: 0.85rem;
+    }
+
+    .log-entry-meta {
+      text-align: right;
+    }
+
+    .log-entry-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent);
+    }
+
+    .log-entry-duration {
+      font-size: 0.65rem;
+      color: var(--text-dim);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    .notification-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--warning);
+      color: #000;
+      padding: 0.75rem 1rem;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transform: translateY(-100%);
+      transition: transform 0.3s;
+      z-index: 100;
+    }
+
+    .notification-banner.show {
+      transform: translateY(0);
+    }
+
+    .permission-prompt {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      z-index: 100;
+    }
+
+    .permission-prompt.hidden {
+      display: none;
+    }
+
+    .permission-text {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    .permission-btn {
+      background: var(--accent);
+      border: none;
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* Intentionality Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 1rem;
+    }
+
+    .modal-overlay.hidden {
+      display: none;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .modal-header {
+      text-align: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .modal-activity {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .modal-duration {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    .modal-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      text-align: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .intent-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .intent-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      color: var(--text);
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .intent-btn:hover {
+      background: var(--border);
+      border-color: var(--text-dim);
+    }
+
+    .intent-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .intent-dot.green { background: var(--green); }
+    .intent-dot.yellow { background: var(--yellow); }
+    .intent-dot.red { background: var(--red); }
+
+    .intent-text {
+      text-align: left;
+    }
+
+    .intent-label {
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    .intent-hint {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .modal-cancel {
+      width: 100%;
+      margin-top: 0.75rem;
+      padding: 0.5rem;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .modal-cancel:hover {
+      color: var(--text);
+    }
+
+    .minutes-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .minutes-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      text-align: center;
+    }
+
+    .minutes-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .minutes-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .minutes-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 0.9rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .minutes-btn:hover {
+      background: var(--border);
+      border-color: var(--text-dim);
+    }
+
+    .intent-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .intent-chip {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 0.5rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .intent-chip:hover {
+      background: var(--border);
+    }
+
+    .intent-chip.selected {
+      background: var(--border);
+      border-color: var(--text-dim);
+    }
+
+    .intent-chip .intent-dot {
+      width: 16px;
+      height: 16px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .modal-cancel-btn {
+      flex: 1;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem;
+      color: var(--text-dim);
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .modal-cancel-btn:hover {
+      color: var(--text);
+      border-color: var(--text-dim);
+    }
+
+    .modal-confirm-btn {
+      flex: 1;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      padding: 0.75rem;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .modal-confirm-btn:hover:not(:disabled) {
+      background: var(--accent-dim);
+    }
+
+    .modal-confirm-btn:disabled {
+      background: var(--border);
+      color: var(--text-dim);
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="notification-banner" id="notificationBanner">
+    ⏰ 15+ minutes unbooked!
+  </div>
+
+  <!-- Log Modal -->
+  <div class="modal-overlay hidden" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-activity" id="modalActivity">Activity</div>
+        <div class="modal-duration" id="modalDuration">0m unbooked</div>
+      </div>
+      
+      <!-- Minutes Input -->
+      <div class="modal-label">Minutes to log</div>
+      <div class="minutes-row">
+        <input type="number" class="minutes-input" id="minutesInput" placeholder="0">
+        <button class="minutes-btn" id="allMinutesBtn">All</button>
+        <button class="minutes-btn" id="fiveMinutesBtn">5</button>
+      </div>
+
+      <!-- Intentionality -->
+      <div class="modal-label">Intentionality</div>
+      <div class="intent-row">
+        <button class="intent-chip" data-intent="green">
+          <div class="intent-dot green"></div>
+          <span>Yes</span>
+        </button>
+        <button class="intent-chip" data-intent="yellow">
+          <div class="intent-dot yellow"></div>
+          <span>No, but ill</span>
+        </button>
+        <button class="intent-chip" data-intent="red">
+          <div class="intent-dot red"></div>
+          <span>No</span>
+        </button>
+      </div>
+
+      <!-- Actions -->
+      <div class="modal-actions">
+        <button class="modal-cancel-btn" id="modalCancel">Cancel</button>
+        <button class="modal-confirm-btn" id="modalConfirm" disabled>Log</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="header">
+    <div class="logo">UN<span>BOOKED</span></div>
+    <div class="status-dot" title="Timer running"></div>
+  </header>
+
+  <section class="timer-section">
+    <div class="timer-label">Unbooked Time</div>
+    <div class="timer-display" id="timerDisplay">00:00</div>
+    <div class="timer-sub" id="timerSub">since last log</div>
+  </section>
+
+  <section class="stats-bar hidden" id="statsBar">
+    <span class="stats-total" id="statsTotal">Today: 0m</span>
+    <div class="stats-colors">
+      <span><div class="dot green"></div><span id="statsGreen">0m</span></span>
+      <span><div class="dot yellow"></div><span id="statsYellow">0m</span></span>
+      <span><div class="dot red"></div><span id="statsRed">0m</span></span>
+    </div>
+  </section>
+
+  <section class="quick-actions">
+    <button class="quick-btn" data-activity="Email">
+      <span class="icon">✉️</span>
+      <span>Email</span>
+    </button>
+    <button class="quick-btn" data-activity="Call">
+      <span class="icon">📞</span>
+      <span>Call</span>
+    </button>
+    <button class="quick-btn" data-activity="Meeting">
+      <span class="icon">👥</span>
+      <span>Meeting</span>
+    </button>
+    <button class="quick-btn" data-activity="Focus Work">
+      <span class="icon">💻</span>
+      <span>Focus Work</span>
+    </button>
+    <button class="quick-btn" data-activity="Parenting">
+      <span class="icon">👶</span>
+      <span>Parenting</span>
+    </button>
+    <button class="quick-btn" data-activity="Chores">
+      <span class="icon">🏠</span>
+      <span>Chores</span>
+    </button>
+    <button class="quick-btn" data-activity="Errands">
+      <span class="icon">🛒</span>
+      <span>Errands</span>
+    </button>
+    <button class="quick-btn" data-activity="Commuting">
+      <span class="icon">🚲</span>
+      <span>Commuting</span>
+    </button>
+    <button class="quick-btn" data-activity="Preparation">
+      <span class="icon">📋</span>
+      <span>Preparation</span>
+    </button>
+    <button class="quick-btn" data-activity="Volunteering">
+      <span class="icon">🤝</span>
+      <span>Volunteering</span>
+    </button>
+    <button class="quick-btn" data-activity="Break">
+      <span class="icon">☕</span>
+      <span>Break</span>
+    </button>
+    <button class="quick-btn" data-activity="Rabbit Hole">
+      <span class="icon">🕳️</span>
+      <span>Rabbit Hole</span>
+    </button>
+    <button class="quick-btn" data-activity="Other">
+      <span class="icon">✏️</span>
+      <span>Other</span>
+    </button>
+    <button class="quick-btn sleep-btn" data-activity="Sleep">
+      <span class="icon">🌙</span>
+      <span>Woke Up — Log Sleep</span>
+    </button>
+  </section>
+
+  <section class="custom-section">
+    <div class="custom-input-row">
+      <input type="text" class="custom-input" id="customActivity" placeholder="Other activity...">
+      <button class="log-btn" id="logCustomBtn">Log</button>
+    </div>
+  </section>
+
+  <section class="log-section">
+    <div class="log-header">
+      <span class="log-title">Today's Log</span>
+      <button class="clear-btn" id="clearLogBtn">Clear</button>
+    </div>
+    <div class="log-list" id="logList">
+      <div class="empty-state">No activities logged yet</div>
+    </div>
+  </section>
+
+  <div class="permission-prompt hidden" id="permissionPrompt">
+    <span class="permission-text">Enable notifications for 15-min alerts?</span>
+    <button class="permission-btn" id="enableNotificationsBtn">Enable</button>
+  </div>
+
+  <script>
+    // State
+    let lastLogTime = null;
+    let log = [];
+    let notificationShown = false;
+    let notificationPermission = Notification.permission;
+    let pendingActivity = null;
+    let selectedIntent = null;
+    let currentElapsedMinutes = 0;
+
+    // DOM
+    const timerDisplay = document.getElementById('timerDisplay');
+    const timerSub = document.getElementById('timerSub');
+    const logList = document.getElementById('logList');
+    const customInput = document.getElementById('customActivity');
+    const notificationBanner = document.getElementById('notificationBanner');
+    const permissionPrompt = document.getElementById('permissionPrompt');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalActivity = document.getElementById('modalActivity');
+    const modalDuration = document.getElementById('modalDuration');
+    const minutesInput = document.getElementById('minutesInput');
+    const modalConfirm = document.getElementById('modalConfirm');
+    const statsBar = document.getElementById('statsBar');
+
+    // Initialize
+    function init() {
+      loadState();
+      
+      // Check notification permission
+      if ('Notification' in window && Notification.permission === 'default') {
+        permissionPrompt.classList.remove('hidden');
+      }
+
+      // Quick action buttons
+      document.querySelectorAll('.quick-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const activity = btn.dataset.activity;
+          if (activity === 'Other') {
+            customInput.focus();
+          } else {
+            showModal(activity);
+          }
+        });
+      });
+
+      // Minutes buttons
+      document.getElementById('allMinutesBtn').addEventListener('click', () => {
+        minutesInput.value = currentElapsedMinutes;
+        updateConfirmButton();
+      });
+
+      document.getElementById('fiveMinutesBtn').addEventListener('click', () => {
+        minutesInput.value = '5';
+        updateConfirmButton();
+      });
+
+      minutesInput.addEventListener('input', updateConfirmButton);
+
+      // Intentionality chips
+      document.querySelectorAll('.intent-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.intent-chip').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedIntent = btn.dataset.intent;
+          updateConfirmButton();
+        });
+      });
+
+      // Modal confirm
+      modalConfirm.addEventListener('click', confirmLog);
+
+      // Modal cancel
+      document.getElementById('modalCancel').addEventListener('click', closeModal);
+
+      // Custom log
+      document.getElementById('logCustomBtn').addEventListener('click', () => {
+        const activity = customInput.value.trim();
+        if (activity) {
+          showModal(activity);
+          customInput.value = '';
+        }
+      });
+
+      customInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          const activity = customInput.value.trim();
+          if (activity) {
+            showModal(activity);
+            customInput.value = '';
+          }
+        }
+      });
+
+      // Clear log
+      document.getElementById('clearLogBtn').addEventListener('click', () => {
+        if (confirm('Clear today\'s log?')) {
+          log = [];
+          lastLogTime = Date.now();
+          notificationShown = false;
+          saveState();
+          renderLog();
+          updateStats();
+        }
+      });
+
+      // Notification permission
+      document.getElementById('enableNotificationsBtn').addEventListener('click', async () => {
+        const permission = await Notification.requestPermission();
+        notificationPermission = permission;
+        permissionPrompt.classList.add('hidden');
+      });
+
+      // Start timer
+      updateTimer();
+      setInterval(updateTimer, 1000);
+
+      // Visibility change
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          updateTimer();
+        }
+      });
+
+      updateStats();
+    }
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem('unbooked_state');
+        if (saved) {
+          const state = JSON.parse(saved);
+          lastLogTime = state.lastLogTime || Date.now();
+          log = state.log || [];
+          
+          const today = new Date().toDateString();
+          log = log.filter(entry => new Date(entry.time).toDateString() === today);
+        } else {
+          lastLogTime = Date.now();
+        }
+      } catch (e) {
+        lastLogTime = Date.now();
+        log = [];
+      }
+      renderLog();
+    }
+
+    function saveState() {
+      localStorage.setItem('unbooked_state', JSON.stringify({
+        lastLogTime,
+        log
+      }));
+    }
+
+    function showModal(activity) {
+      pendingActivity = activity;
+      selectedIntent = null;
+      currentElapsedMinutes = Math.floor((Date.now() - lastLogTime) / 60000);
+      
+      modalActivity.textContent = activity;
+      modalDuration.textContent = currentElapsedMinutes + 'm unbooked';
+      minutesInput.value = '';
+      minutesInput.placeholder = currentElapsedMinutes;
+      
+      document.querySelectorAll('.intent-chip').forEach(b => b.classList.remove('selected'));
+      updateConfirmButton();
+      
+      modalOverlay.classList.remove('hidden');
+    }
+
+    function closeModal() {
+      modalOverlay.classList.add('hidden');
+      pendingActivity = null;
+      selectedIntent = null;
+    }
+
+    function updateConfirmButton() {
+      const mins = minutesInput.value === '' ? currentElapsedMinutes : parseInt(minutesInput.value) || 0;
+      const canConfirm = selectedIntent && mins > 0;
+      
+      modalConfirm.disabled = !canConfirm;
+      modalConfirm.textContent = 'Log ' + mins + 'm';
+    }
+
+    function confirmLog() {
+      if (!pendingActivity || !selectedIntent) return;
+
+      const mins = minutesInput.value === '' ? currentElapsedMinutes : parseInt(minutesInput.value) || 0;
+      if (mins <= 0) return;
+
+      const duration = mins * 60 * 1000;
+      const now = Date.now();
+      
+      log.unshift({
+        activity: pendingActivity,
+        time: now,
+        duration,
+        intentionality: selectedIntent
+      });
+
+      // Move lastLogTime forward by logged duration (subtract from unbooked)
+      lastLogTime = lastLogTime + duration;
+      
+      notificationShown = false;
+      notificationBanner.classList.remove('show');
+      
+      closeModal();
+      saveState();
+      renderLog();
+      updateStats();
+      
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+    }
+
+    function renderLog() {
+      if (log.length === 0) {
+        logList.innerHTML = '<div class="empty-state">No activities logged yet</div>';
+        return;
+      }
+
+      logList.innerHTML = log.map(entry => `
+        <div class="log-entry">
+          <div class="log-entry-left">
+            <div class="dot ${entry.intentionality || 'green'}"></div>
+            <span class="log-entry-activity">${escapeHtml(entry.activity)}</span>
+          </div>
+          <div class="log-entry-meta">
+            <div class="log-entry-time">${formatTime(entry.time)}</div>
+            <div class="log-entry-duration">${formatDuration(entry.duration)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateStats() {
+      if (log.length === 0) {
+        statsBar.classList.add('hidden');
+        return;
+      }
+
+      statsBar.classList.remove('hidden');
+
+      const stats = log.reduce((acc, entry) => {
+        acc.total += entry.duration;
+        const intent = entry.intentionality || 'green';
+        acc[intent] = (acc[intent] || 0) + entry.duration;
+        return acc;
+      }, { total: 0, green: 0, yellow: 0, red: 0 });
+
+      document.getElementById('statsTotal').textContent = 'Today: ' + formatDuration(stats.total);
+      document.getElementById('statsGreen').textContent = formatDuration(stats.green || 0);
+      document.getElementById('statsYellow').textContent = formatDuration(stats.yellow || 0);
+      document.getElementById('statsRed').textContent = formatDuration(stats.red || 0);
+    }
+
+    function updateTimer() {
+      if (!lastLogTime) return;
+
+      const elapsed = Date.now() - lastLogTime;
+      const minutes = Math.floor(elapsed / 60000);
+      const seconds = Math.floor((elapsed % 60000) / 1000);
+
+      timerDisplay.textContent = `${pad(minutes)}:${pad(seconds)}`;
+
+      timerDisplay.classList.remove('warning', 'danger');
+      if (minutes >= 15) {
+        timerDisplay.classList.add('danger');
+        triggerNotification();
+      } else if (minutes >= 10) {
+        timerDisplay.classList.add('warning');
+      }
+
+      if (minutes >= 60) {
+        const hours = Math.floor(minutes / 60);
+        timerSub.textContent = `${hours}h ${minutes % 60}m unaccounted`;
+      } else {
+        timerSub.textContent = 'to account for';
+      }
+    }
+
+    function triggerNotification() {
+      if (notificationShown) return;
+      notificationShown = true;
+
+      notificationBanner.classList.add('show');
+      setTimeout(() => {
+        notificationBanner.classList.remove('show');
+      }, 5000);
+
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Unbooked', {
+          body: '15+ minutes unaccounted! What are you doing?',
+          icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">⏰</text></svg>',
+          tag: 'unbooked-alert',
+          renotify: true
+        });
+      }
+    }
+
+    function pad(n) {
+      return n.toString().padStart(2, '0');
+    }
+
+    function formatTime(timestamp) {
+      return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatDuration(ms) {
+      const minutes = Math.floor(ms / 60000);
+      if (minutes < 60) {
+        return `${minutes}m`;
+      }
+      const hours = Math.floor(minutes / 60);
+      return `${hours}h ${minutes % 60}m`;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    init();
+  </script>
+</body>
+</html>
